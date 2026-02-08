@@ -1,0 +1,8 @@
+INFO:     Started server process [74093]
+INFO:     Waiting for application startup.
+2026-01-16 13:33:01 | INFO     | app.main | Starting Taxi Backend...
+2026-01-16 13:33:01 | INFO     | app.neo4j.driver | Connecting to Neo4j at bolt://127.0.0.1:7687
+2026-01-16 13:33:01 | INFO     | app.neo4j.driver | Neo4j connection established
+2026-01-16 13:33:01 | INFO     | app.main | Neo4j connected
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)

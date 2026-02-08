@@ -1,0 +1,321 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2834157119518891154
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1926636102407215990}
+  - component: {fileID: 4463680726991673347}
+  - component: {fileID: 5972437181415030551}
+  m_Layer: 3
+  m_Name: Barrier
+  m_TagString: RoadBlock
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1926636102407215990
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2834157119518891154}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8864493532979810803}
+  - {fileID: 2522806085811709869}
+  - {fileID: 1576011632353970849}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4463680726991673347
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2834157119518891154}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 12, y: 2, z: 0.5}
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!208 &5972437181415030551
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2834157119518891154}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 6, y: 0.5, z: 0.15}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1, z: 0}
+  m_TimeToStationary: 0.5
+--- !u!1001 &1576011632353579041
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1926636102407215990}
+    m_Modifications:
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Name
+      value: Props_Traffic Control Barrier Fence 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_TagString
+      value: RoadBlock
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000021855694
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5879488877917313851, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639668592840413702, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+--- !u!4 &1576011632353970849 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+  m_PrefabInstance: {fileID: 1576011632353579041}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2522806085812108589
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1926636102407215990}
+    m_Modifications:
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Name
+      value: Props_Traffic Control Barrier Fence 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_TagString
+      value: RoadBlock
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000021855694
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5879488877917313851, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639668592840413702, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+--- !u!4 &2522806085811709869 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+  m_PrefabInstance: {fileID: 2522806085812108589}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8864493532979940211
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1926636102407215990}
+    m_Modifications:
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Name
+      value: Props_Traffic Control Barrier Fence 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_TagString
+      value: RoadBlock
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000021855694
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5879488877917313851, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639668592840413702, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+--- !u!4 &8864493532979810803 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: 484404636ac422042a24ac95512dc2d3, type: 3}
+  m_PrefabInstance: {fileID: 8864493532979940211}
+  m_PrefabAsset: {fileID: 0}

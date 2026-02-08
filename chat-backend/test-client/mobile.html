@@ -1,0 +1,3846 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaxiChat</title>
+    <style>
+        :root {
+            --bg-dark: #0f0f1a;
+            --bg-card: #1a1a2e;
+            --bg-input: #252542;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --success: #4ade80;
+            --music-bar: #2d2d4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Smartphone Frame */
+        .phone-frame {
+            width: 100%;
+            max-width: 390px;
+            height: 844px;
+            max-height: 90vh;
+            background: var(--bg-dark);
+            border-radius: 40px;
+            box-shadow:
+                0 0 0 12px #2a2a3a,
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Notch */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        /* Screens */
+        .screen {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            padding-top: 35px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ==================== BOOKING SCREEN ==================== */
+        #bookingScreen {
+            background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-dark) 100%);
+            padding: 40px 25px 0;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .booking-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            /* Critical for flex children to shrink properly */
+            overflow: hidden;
+        }
+
+        .booking-bottom {
+            flex-shrink: 0;
+            padding: 12px 0 20px;
+            background: var(--bg-dark);
+        }
+
+        /* Hide user ID section when in chat mode */
+        #bookingScreen.chat-mode .user-section {
+            display: none;
+        }
+
+        #bookingScreen.chat-mode .booking-header {
+            margin-bottom: 10px;
+        }
+
+        /* Expand chat tab content when in chat mode */
+        #bookingScreen.chat-mode #chatMode {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* Expand chat container in chat mode */
+        #bookingScreen.chat-mode .mini-chat-container {
+            flex: 1;
+            height: auto;
+            min-height: 0;
+        }
+
+        .booking-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .booking-logo {
+            font-size: 2rem;
+        }
+
+        .booking-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .booking-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .booking-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+        }
+
+        .booking-btn:active {
+            transform: translateY(0);
+        }
+
+        .connection-status {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ==================== DESTINATION TABS ==================== */
+        .destination-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            border-color: transparent;
+        }
+
+        /* ==================== POLICY SELECTOR ==================== */
+        .policy-selector {
+            margin-bottom: 12px;
+        }
+
+        .policy-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .policy-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .policy-btn {
+            flex: 1;
+            padding: 10px 8px;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .policy-btn:hover {
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--text);
+        }
+
+        .policy-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            border-color: transparent;
+        }
+
+        .policy-selector.hidden {
+            display: none;
+        }
+
+        .policy-icon {
+            font-size: 1.2rem;
+        }
+
+        .policy-name {
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== SEARCH MODE ==================== */
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding-left: 20px;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-top: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        .search-item {
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-item:hover {
+            background: rgba(233, 69, 96, 0.1);
+        }
+
+        .search-item-icon {
+            font-size: 1.2rem;
+        }
+
+        .search-item-details {
+            flex: 1;
+        }
+
+        .search-item-name {
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .search-item-category {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .search-item-rating {
+            color: #fbbf24;
+            font-size: 0.85rem;
+        }
+
+        /* ==================== CHAT MODE ==================== */
+        .mini-chat-container {
+            background: var(--bg-input);
+            border-radius: 14px;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            transition: height 0.3s ease;
+        }
+
+        .mini-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mini-chat-input-area {
+            display: flex;
+            gap: 6px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+        }
+
+        .mini-chat-input-area .form-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .mini-send-btn,
+        .mini-voice-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .mini-voice-btn {
+            background: var(--bg-input);
+            border: 2px solid var(--accent);
+        }
+
+        .mini-voice-btn.recording {
+            background: var(--accent);
+            animation: pulse-voice 1s infinite;
+        }
+
+        @keyframes pulse-voice {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .mini-send-btn:hover,
+        .mini-voice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .mini-message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+
+        .mini-message.user {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            align-self: flex-end;
+            color: white;
+        }
+
+        .mini-message.assistant {
+            background: var(--bg-card);
+            align-self: flex-start;
+            color: var(--text);
+        }
+
+        .mini-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .mini-option-btn {
+            padding: 6px 12px;
+            background: rgba(233, 69, 96, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 16px;
+            color: var(--accent-light);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mini-option-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ==================== SELECTED DESTINATION ==================== */
+        .selected-destination {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .selected-destination.hidden {
+            display: none;
+        }
+
+        .selected-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .selected-name {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .clear-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #ef4444;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        .booking-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ==================== BOOKING WAITING STATES ==================== */
+        .booking-status-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 24px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .booking-status-overlay.active {
+            display: flex;
+        }
+
+        .booking-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-input);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .booking-status-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .booking-status-text.success {
+            color: var(--success);
+        }
+
+        .booking-status-text.warning {
+            color: #fbbf24;
+        }
+
+        .booking-status-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            white-space: pre-line;
+        }
+
+        .booking-queue-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .booking-queue-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .booking-queue-btn.accept {
+            background: linear-gradient(135deg, var(--success), #22c55e);
+            color: white;
+        }
+
+        .booking-queue-btn.accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .booking-queue-btn.reject {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .booking-queue-btn.reject:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .booking-cancel-btn {
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 10px;
+            color: #ef4444;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .booking-cancel-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* ==================== CHAT SCREEN ==================== */
+        #chatScreen {
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        /* Music Bar */
+        .music-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--music-bar);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .music-bar.active {
+            display: flex;
+        }
+
+        .music-icon {
+            font-size: 1.2rem;
+        }
+
+        .music-genre {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .music-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .music-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .volume-slider {
+            width: 60px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .chat-status {
+            font-size: 0.75rem;
+            color: var(--success);
+        }
+
+        .end-ride-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 20px;
+            color: #ef4444;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .end-ride-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Messages */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* Custom Scrollbar Styling */
+        .messages::-webkit-scrollbar,
+        .mini-chat-messages::-webkit-scrollbar,
+        .search-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track,
+        .mini-chat-messages::-webkit-scrollbar-track,
+        .search-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages::-webkit-scrollbar-thumb,
+        .mini-chat-messages::-webkit-scrollbar-thumb,
+        .search-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.3);
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover,
+        .mini-chat-messages::-webkit-scrollbar-thumb:hover,
+        .search-dropdown::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 69, 96, 0.5);
+        }
+
+        /* Firefox scrollbar */
+        .messages,
+        .mini-chat-messages,
+        .search-dropdown {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(233, 69, 96, 0.3) transparent;
+        }
+
+        /* Current Destination Banner */
+        .current-destination-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+            border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+            flex-shrink: 0;
+        }
+
+        .current-destination-banner.active {
+            display: flex;
+        }
+
+        .current-destination-banner .dest-icon {
+            font-size: 1.1rem;
+        }
+
+        .current-destination-banner .dest-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-destination-banner .dest-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+            color: white;
+        }
+
+        .message.assistant {
+            background: var(--bg-card);
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+            color: var(--text);
+        }
+
+        .message.system {
+            background: rgba(251, 191, 36, 0.15);
+            align-self: center;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            border-radius: 12px;
+        }
+
+        .message pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            margin: 0;
+            color: inherit;
+        }
+
+        /* Option Buttons */
+        .buttons-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .option-btn {
+            padding: 10px 16px;
+            background: rgba(233, 69, 96, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            color: var(--accent-light);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Input Area */
+        .input-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 18px;
+            background: var(--bg-input);
+            border: none;
+            border-radius: 24px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .message-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Audio Player (hidden) */
+        audio {
+            display: none;
+        }
+
+        /* Voice Recording Button */
+        .voice-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        .voice-btn.recording {
+            background: var(--accent);
+            color: white;
+            animation: pulse-recording 1s infinite;
+        }
+
+        @keyframes pulse-recording {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            }
+        }
+
+        .voice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Voice status indicator */
+        .voice-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 4px 16px;
+            display: none;
+            background: var(--bg-card);
+        }
+
+        .voice-status.active {
+            display: block;
+            color: var(--accent);
+        }
+
+        /* ==================== SETTINGS SCREEN ==================== */
+        #settingsScreen {
+            background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-dark) 100%);
+            padding: 50px 25px 25px;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .settings-back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .settings-back-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        .settings-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .settings-section {
+            background: var(--bg-input);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .provider-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .provider-option {
+            flex: 1;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .provider-option:hover {
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .provider-option.active {
+            background: rgba(233, 69, 96, 0.15);
+            border-color: var(--accent);
+        }
+
+        .provider-option input {
+            display: none;
+        }
+
+        .provider-option .provider-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .provider-option .provider-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .provider-option .provider-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .settings-select option {
+            background: var(--bg-card);
+            color: var(--text);
+            padding: 10px;
+        }
+
+        .settings-current {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .settings-current-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .settings-current-value {
+            font-size: 0.9rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .settings-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .settings-btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+        }
+
+        .settings-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .settings-btn.primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .settings-btn.secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-btn.secondary:hover {
+            background: var(--bg-card);
+        }
+
+        .settings-inline-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+
+        .settings-status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .settings-status.success {
+            display: block;
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+        }
+
+        .settings-status.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .settings-status.loading {
+            display: block;
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .settings-toggle input {
+            display: none;
+        }
+
+        .settings-toggle-slider {
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            position: relative;
+            transition: background 0.2s ease;
+        }
+
+        .settings-toggle-slider::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .settings-toggle input:checked+.settings-toggle-slider {
+            background: var(--accent);
+        }
+
+        .settings-toggle input:checked+.settings-toggle-slider::after {
+            transform: translateX(20px);
+        }
+
+        .settings-toggle-label {
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .settings-hint {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Custom Model Input Styles */
+        .settings-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .settings-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .custom-model-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .custom-model-input-row .settings-input {
+            flex: 1;
+        }
+
+        .add-model-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .add-model-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .add-model-btn:active {
+            transform: scale(0.95);
+        }
+
+        .custom-models-list {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .custom-model-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-model-item .model-name {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text);
+            word-break: break-all;
+        }
+
+        .custom-model-item .remove-model-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #ef4444;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .custom-model-item .remove-model-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Settings Button in Booking Header */
+        .booking-settings-btn {
+            position: absolute;
+            top: 45px;
+            right: 20px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .booking-settings-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            color: var(--accent);
+        }
+
+        .booking-settings-btn.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+
+            html,
+            body {
+                height: 100%;
+                overflow-y: auto;
+                overscroll-behavior-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            body {
+                padding: 0;
+                align-items: stretch;
+                justify-content: flex-start;
+                min-height: 100dvh;
+                height: 100dvh;
+            }
+
+            .phone-frame {
+                width: 100vw;
+                max-width: none;
+                height: 100dvh;
+                max-height: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .notch {
+                display: none;
+            }
+
+            .screen {
+                padding-top: env(safe-area-inset-top, 0px);
+            }
+
+            #bookingScreen {
+                padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 0;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .booking-content {
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .booking-header {
+                position: relative;
+                margin-bottom: 12px;
+                padding-right: 46px;
+            }
+
+            .booking-logo {
+                font-size: 1.6rem;
+            }
+
+            .booking-title {
+                font-size: 1.2rem;
+            }
+
+            .booking-settings-btn {
+                top: calc(env(safe-area-inset-top, 0px) + 6px);
+                right: 12px;
+                width: 34px;
+                height: 34px;
+                font-size: 1.05rem;
+            }
+
+            .form-group {
+                margin-bottom: 10px;
+            }
+
+            .form-label {
+                font-size: 0.75rem;
+                margin-bottom: 6px;
+            }
+
+            .form-input {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+            }
+
+            .destination-tabs {
+                margin-bottom: 10px;
+            }
+
+            .tab-btn {
+                padding: 8px;
+                font-size: 0.8rem;
+            }
+
+            .selected-destination {
+                padding: 8px 12px;
+                margin-bottom: 8px;
+            }
+
+            .selected-name {
+                font-size: 0.95rem;
+            }
+
+            .booking-status-overlay {
+                gap: 10px;
+                padding: 16px;
+                margin-bottom: 10px;
+            }
+
+            .booking-status-text {
+                font-size: 0.9rem;
+            }
+
+            .booking-status-details {
+                font-size: 0.78rem;
+            }
+
+            .booking-queue-buttons {
+                gap: 8px;
+                margin-top: 6px;
+            }
+
+            .booking-queue-btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
+            .booking-cancel-btn {
+                margin-top: 8px;
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+
+            .booking-bottom {
+                padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .booking-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .connection-status {
+                margin-top: 10px;
+                font-size: 0.75rem;
+            }
+
+            .input-area {
+                padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+                gap: 8px;
+            }
+
+            .message-input {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+
+            .send-btn,
+            .voice-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.05rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+
+        <!-- Settings Button -->
+        <button id="settingsBtn" class="booking-settings-btn" title="Impostazioni LLM">⚙️</button>
+
+        <!-- BOOKING SCREEN -->
+        <div id="bookingScreen" class="screen active">
+            <div class="booking-content">
+                <div class="booking-header">
+                    <span class="booking-logo">🚕</span>
+                    <h1 class="booking-title">TaxiChat</h1>
+                </div>
+
+                <div class="user-section">
+                    <div class="form-group">
+                        <label class="form-label">ID Utente</label>
+                        <input type="text" id="userId" class="form-input" placeholder="es. U1" value="U1">
+                    </div>
+                </div>
+
+                <!-- Hidden city input with default value -->
+                <input type="hidden" id="city" value="Palermo">
+
+                <!-- Destination Mode Tabs -->
+                <div class="destination-tabs">
+                    <button id="tabSearch" class="tab-btn active" data-tab="search">
+                        🔍 Cerca
+                    </button>
+                    <button id="tabChat" class="tab-btn" data-tab="chat">
+                        💬 Chiedi
+                    </button>
+                </div>
+
+                <!-- Search Mode -->
+                <div id="searchMode" class="tab-content active">
+                    <div class="search-container">
+                        <input type="text" id="poiSearch" class="form-input search-input"
+                            placeholder="🔍 Cerca destinazione..." autocomplete="off">
+                        <div id="searchDropdown" class="search-dropdown"></div>
+                    </div>
+                </div>
+
+                <!-- Chat Mode -->
+                <div id="chatMode" class="tab-content">
+                    <div class="mini-chat-container">
+                        <div id="preChatMessages" class="mini-chat-messages"></div>
+                        <div class="mini-chat-input-area">
+                            <input type="text" id="preChatInput" class="form-input"
+                                placeholder="Dimmi dove vuoi andare...">
+                            <button id="preChatVoiceBtn" class="mini-voice-btn" title="Registra voce">🎤</button>
+                            <button id="preChatSendBtn" class="mini-send-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed bottom area -->
+            <div class="booking-bottom">
+                <!-- Selected Destination Display (moved here to not affect chat layout) -->
+                <div id="selectedDestination" class="selected-destination hidden">
+                    <div class="selected-label">📍 Destinazione</div>
+                    <div id="selectedPoiName" class="selected-name">-</div>
+                    <button id="clearDestination" class="clear-btn">✕</button>
+                </div>
+
+                <!-- Booking Status Overlay (for Unity communication) -->
+                <div id="bookingStatusOverlay" class="booking-status-overlay">
+                    <div id="bookingSpinner" class="booking-spinner"></div>
+                    <div id="bookingStatusText" class="booking-status-text">In attesa della risposta del taxi...</div>
+                    <div id="bookingStatusDetails" class="booking-status-details"></div>
+                    <div id="bookingQueueButtons" class="booking-queue-buttons" style="display: none;">
+                        <button id="queueAcceptBtn" class="booking-queue-btn accept">✅ Sì, attendo</button>
+                        <button id="queueRejectBtn" class="booking-queue-btn reject">❌ No, annulla</button>
+                    </div>
+                    <button id="bookingCancelBtn" class="booking-cancel-btn" style="display: none;">Annulla
+                        prenotazione</button>
+                </div>
+
+                <!-- Policy Selector -->
+                <div id="policySelector" class="policy-selector hidden">
+                    <span class="policy-label">🎯 Modalità di Guida</span>
+                    <div class="policy-options">
+                        <button class="policy-btn active" data-policy="Comfort">
+                            <span class="policy-icon">🛋️</span>
+                            <span class="policy-name">Comfort</span>
+                        </button>
+                        <button class="policy-btn" data-policy="Eco">
+                            <span class="policy-icon">🌿</span>
+                            <span class="policy-name">Eco</span>
+                        </button>
+                        <button class="policy-btn" data-policy="Sport">
+                            <span class="policy-icon">🏎️</span>
+                            <span class="policy-name">Sport</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="startRideBtn" class="booking-btn" disabled>Prenota Corsa</button>
+                <div class="connection-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connessione...</span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- SETTINGS SCREEN -->
+        <div id="settingsScreen" class="screen">
+            <div class="settings-header">
+                <button id="settingsBackBtn" class="settings-back-btn">←</button>
+                <h2 class="settings-title">⚙️ Impostazioni LLM</h2>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Stato Attuale</div>
+                <div class="settings-current">
+                    <span class="settings-current-label">Provider:</span>
+                    <span id="currentProvider" class="settings-current-value">-</span>
+                </div>
+                <div class="settings-current">
+                    <span class="settings-current-label">Modello:</span>
+                    <span id="currentModel" class="settings-current-value">-</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Provider</div>
+                <div class="provider-options">
+                    <label class="provider-option" id="providerOllama">
+                        <input type="radio" name="provider" value="ollama">
+                        <div class="provider-icon">🖥️</div>
+                        <div class="provider-name">Ollama</div>
+                        <div class="provider-desc">Locale</div>
+                    </label>
+                    <label class="provider-option" id="providerOpenRouter">
+                        <input type="radio" name="provider" value="openrouter">
+                        <div class="provider-icon">☁️</div>
+                        <div class="provider-name">OpenRouter</div>
+                        <div class="provider-desc">Cloud API</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Modello</div>
+                <select id="modelSelect" class="settings-select">
+                    <option value="">Caricamento...</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Voce Taxi</div>
+                <label class="settings-toggle">
+                    <input type="checkbox" id="voiceToggle">
+                    <span class="settings-toggle-slider"></span>
+                    <span class="settings-toggle-label">Leggi i messaggi del taxi</span>
+                </label>
+                <div class="settings-hint">Su mobile potrebbe servire un tap per abilitare l'audio.</div>
+                <button id="ttsResetBtn" class="settings-btn secondary settings-inline-btn">🔄 Reset TTS</button>
+            </div>
+
+            <!-- Custom Model Section -->
+            <div class="settings-section">
+                <div class="settings-section-title">Aggiungi Modello Personalizzato</div>
+                <div class="custom-model-input-row">
+                    <input type="text" id="customModelInput" class="settings-input"
+                        placeholder="es. openai/gpt-4o-mini-2024-07-18">
+                    <button id="addCustomModelBtn" class="add-model-btn">+</button>
+                </div>
+                <div id="customModelsList" class="custom-models-list"></div>
+            </div>
+
+            <div class="settings-actions">
+                <button id="settingsCancelBtn" class="settings-btn secondary">Annulla</button>
+                <button id="settingsSaveBtn" class="settings-btn primary">💾 Salva</button>
+            </div>
+
+            <div id="settingsStatus" class="settings-status"></div>
+        </div>
+
+        <!-- CHAT SCREEN -->
+        <div id="chatScreen" class="screen">
+            <!-- Music Bar -->
+            <div id="musicBar" class="music-bar">
+                <span class="music-icon">🎵</span>
+                <span id="musicGenre" class="music-genre">-</span>
+                <div class="music-controls">
+                    <input type="range" id="volumeSlider" class="volume-slider" min="1" max="10" value="5">
+                    <button id="pauseBtn" class="music-btn" title="Pausa">⏸️</button>
+                    <button id="stopBtn" class="music-btn" title="Stop">⏹️</button>
+                </div>
+            </div>
+
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-avatar">🚕</div>
+                <div class="chat-info">
+                    <div class="chat-name">Taxi Autonomo</div>
+                    <div class="chat-status">In viaggio...</div>
+                </div>
+                <button id="endRideBtn" class="end-ride-btn">Fine Corsa</button>
+            </div>
+
+            <!-- Current Destination Banner -->
+            <div id="currentDestinationBanner" class="current-destination-banner">
+                <span class="dest-icon">📍</span>
+                <div>
+                    <div class="dest-label">Destinazione</div>
+                    <div id="currentDestName" class="dest-name">-</div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages" class="messages"></div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <input type="text" id="messageInput" class="message-input" placeholder="Scrivi un messaggio...">
+                <button id="voiceBtn" class="voice-btn" title="Registra messaggio vocale">🎤</button>
+                <button id="sendBtn" class="send-btn">➤</button>
+            </div>
+            <div id="voiceStatus" class="voice-status"></div>
+        </div>
+    </div>
+
+    <!-- Audio Player -->
+    <audio id="audioPlayer" loop></audio>
+
+    <script>
+        // State
+        let ws = null;
+        let sessionId = 'S' + Date.now();
+        let rideId = null;
+        let musicPlaying = false;
+        let musicPaused = false;
+        let selectedPoi = null;  // Selected POI for destination
+        let searchDebounceTimer = null;
+        const apiBase = `${window.location.protocol}//${window.location.host}`;
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsBase = `${wsProtocol}://${window.location.host}`;
+
+        // Elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const bookingScreen = document.getElementById('bookingScreen');
+        const chatScreen = document.getElementById('chatScreen');
+        const startRideBtn = document.getElementById('startRideBtn');
+        const endRideBtn = document.getElementById('endRideBtn');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const musicBar = document.getElementById('musicBar');
+        const musicGenre = document.getElementById('musicGenre');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        // New booking elements
+        const tabSearch = document.getElementById('tabSearch');
+        const tabChat = document.getElementById('tabChat');
+        const searchMode = document.getElementById('searchMode');
+        const chatMode = document.getElementById('chatMode');
+        const poiSearch = document.getElementById('poiSearch');
+        const searchDropdown = document.getElementById('searchDropdown');
+        const preChatMessages = document.getElementById('preChatMessages');
+        const preChatInput = document.getElementById('preChatInput');
+        const preChatSendBtn = document.getElementById('preChatSendBtn');
+        const preChatVoiceBtn = document.getElementById('preChatVoiceBtn');
+        const selectedDestination = document.getElementById('selectedDestination');
+        const selectedPoiName = document.getElementById('selectedPoiName');
+        const clearDestination = document.getElementById('clearDestination');
+        const currentDestinationBanner = document.getElementById('currentDestinationBanner');
+        const currentDestName = document.getElementById('currentDestName');
+
+        // Booking status overlay elements
+        const bookingStatusOverlay = document.getElementById('bookingStatusOverlay');
+        const bookingSpinner = document.getElementById('bookingSpinner');
+        const bookingStatusText = document.getElementById('bookingStatusText');
+        const bookingStatusDetails = document.getElementById('bookingStatusDetails');
+        const bookingQueueButtons = document.getElementById('bookingQueueButtons');
+        const queueAcceptBtn = document.getElementById('queueAcceptBtn');
+        const queueRejectBtn = document.getElementById('queueRejectBtn');
+        const bookingCancelBtn = document.getElementById('bookingCancelBtn');
+
+        // Booking state
+        let bookingState = 'idle'; // 'idle', 'waiting', 'waiting_taxi', 'confirmed', 'charging', 'queue', 'queued'
+        let lastBookingEtaMinutes = 15;
+        let lastQueuePosition = null;
+        let selectedPolicy = 'Comfort'; // Default driving policy
+
+        // Policy selector elements
+        const policySelector = document.getElementById('policySelector');
+        const policyButtons = document.querySelectorAll('.policy-btn');
+
+        // Policy button click handlers
+        policyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                policyButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedPolicy = btn.dataset.policy;
+                console.log('Selected policy:', selectedPolicy);
+            });
+        });
+
+
+        // Function to update current destination banner during ride
+        function updateCurrentDestination(name) {
+            if (name && currentDestName && currentDestinationBanner) {
+                currentDestName.textContent = name;
+                currentDestinationBanner.classList.add('active');
+            }
+        }
+
+        // Auto-connect WebSocket on load
+        window.addEventListener('load', () => {
+            connectWebSocket();
+        });
+
+        function connectWebSocket() {
+            statusText.textContent = 'Connessione...';
+
+            ws = new WebSocket(`${wsBase}/ws`);
+
+            ws.onopen = () => {
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Connesso';
+                // Button enabled only when POI is selected
+                updateStartButton();
+
+                // Ensure inputs are enabled on connection
+                setChatInputState(true);
+            };
+
+            ws.onclose = () => {
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Disconnesso';
+                startRideBtn.disabled = true;
+                // Auto-reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (err) => {
+                console.error('WebSocket error:', err);
+                statusText.textContent = 'Errore';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Received:', data);
+
+                // Handle booking responses from Unity (via backend)
+                if (data.booking_status) {
+                    handleBookingResponse(data);
+                    return;
+                }
+
+                // Check if this is a pre-ride response (for mini chat)
+                if (bookingScreen.classList.contains('active')) {
+                    handlePreRideResponse(data);
+                } else {
+                    handleResponse(data);
+                }
+            };
+        }
+
+        // Handle booking response from Unity
+        function handleBookingResponse(data) {
+            console.log('Booking response:', data.booking_status, data);
+
+            switch (data.booking_status) {
+                case 'waiting':
+                    // Acknowledgment from backend - waiting for Unity response
+                    // Handle policy override (e.g. pregnancy forces Comfort)
+                    if (data.policy_override) {
+                        const overrideMsg = data.policy_override.message;
+                        showBookingStatus('waiting', `${overrideMsg}\n\nIn attesa della risposta del taxi...`, data.message);
+                    } else {
+                        showBookingStatus('waiting', 'In attesa della risposta del taxi...', data.message);
+                    }
+                    break;
+                case 'processing':
+                    // Queue response being processed
+                    showBookingStatus('waiting', 'Elaborazione in corso...', data.message);
+                    break;
+                case 'confirmed':
+                    if (data.eta_minutes !== undefined && data.eta_minutes !== null) {
+                        const parsedEta = Number(data.eta_minutes);
+                        if (!Number.isNaN(parsedEta) && Number.isFinite(parsedEta)) {
+                            lastBookingEtaMinutes = Math.max(1, Math.round(parsedEta));
+                        }
+                    }
+                    // Handle policy override (e.g. pregnancy forces Comfort)
+                    if (data.policy_override) {
+                        const overrideMsg = data.policy_override.message;
+                        showBookingStatus('waiting_taxi', `🚕 Prenotazione confermata!\n\n${overrideMsg}`, data.message);
+                    } else {
+                        showBookingStatus('waiting_taxi', '🚕 Prenotazione confermata! Attendi l’arrivo del taxi...', data.message);
+                    }
+                    break;
+                case 'charging':
+                    showBookingStatus('charging', '🔋 In ricarica', data.message);
+                    break;
+                case 'waiting_queue_response':
+                    showBookingStatus('queue', '⏳ Taxi occupato', data.message);
+                    break;
+                case 'queued':
+                    if (data.queue_position !== undefined && data.queue_position !== null) {
+                        const parsedPos = Number(data.queue_position);
+                        if (!Number.isNaN(parsedPos) && Number.isFinite(parsedPos)) {
+                            lastQueuePosition = parsedPos;
+                        }
+                    }
+                    showBookingStatus('queued', '✅ Sei in coda!', data.message);
+                    break;
+                case 'queue_update':
+                    updateQueueStatus(data);
+                    break;
+                case 'cancelled':
+                    hideBookingStatus();
+                    break;
+                case 'ended':
+                    // Ride completed - hide overlay, show message, process commands
+                    hideBookingStatus();
+
+                    // Add the goodbye message from server
+                    if (data.message) {
+                        addAssistantMessage(data.message);
+                    }
+
+                    // Process commands (like redirect_to_main)
+                    if (data.commands && data.commands.length > 0) {
+                        data.commands.forEach(cmd => handleCommand(cmd));
+                    }
+                    break;
+                case 'rerouted':
+                    // Destination changed during ride - show message in chat
+                    hideBookingStatus();
+                    if (data.message) {
+                        addAssistantMessage(data.message);
+                    }
+                    break;
+                case 'ride_started':
+                    if (data.eta_minutes) {
+                        lastBookingEtaMinutes = data.eta_minutes;
+                        console.log("Updated ETA from ride_started:", lastBookingEtaMinutes);
+                    }
+                    startActualRide();
+                    break;
+                case 'error':
+                    // Show error message in chat (especially during active ride)
+                    if (data.message) {
+                        addAssistantMessage(data.message);
+                    }
+                    // Also show overlay if in booking state
+                    if (bookingStatusOverlay.classList.contains('active')) {
+                        showBookingStatus('error', '⚠️ Errore', data.message);
+                    }
+                    // Re-enable booking after error
+                    startRideBtn.disabled = false;
+                    setChatInputState(true, '');
+                    break;
+                default:
+                    console.warn('Unknown booking status:', data.booking_status);
+            }
+        }
+
+
+
+        // Start Ride - Now sends booking request to Unity
+        startRideBtn.addEventListener('click', () => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            if (!selectedPoi) return;  // Need a POI selected
+
+            rideId = 'R' + Date.now();
+            lastBookingEtaMinutes = 15;
+
+            // Show booking overlay with waiting state
+            showBookingStatus('waiting', 'In attesa della risposta del taxi...', '');
+
+            // Disable booking button while waiting
+            startRideBtn.disabled = true;
+            setChatInputState(false, 'Prenotazione in corso...');
+
+            // Estrai ID Unity in modo robusto (gestendo anche lo 0)
+            let poiId = 'UNKNOWN';
+            if (selectedPoi.id_unity !== undefined && selectedPoi.id_unity !== null) {
+                poiId = String(selectedPoi.id_unity); // Converte numero a stringa (es "0")
+            } else if (selectedPoi.poi_id_unity) {
+                poiId = String(selectedPoi.poi_id_unity);
+            } else {
+                // Fallback su ID generico
+                poiId = 'POI_' + (selectedPoi.poi_id || selectedPoi.id || 'UNKNOWN');
+            }
+
+            // Send booking request to Unity via backend
+            const bookingRequest = {
+                type: 'richiesta_prenotazione',
+                session_id: sessionId,
+                payload: {
+                    destinazione: {
+                        nome: selectedPoi.poi_name || selectedPoi.name,
+                        poi_id_unity: poiId
+                    },
+                    user_id: document.getElementById('userId').value,
+                    driving_policy: selectedPolicy
+                }
+            };
+
+            ws.send(JSON.stringify(bookingRequest));
+            console.log('Booking request sent:', bookingRequest);
+        });
+
+        // Booking status UI functions
+        function formatDurationMinutes(minutes) {
+            const value = Number(minutes);
+            if (!Number.isFinite(value)) return 'n.d.';
+            if (value < 0) return '0 min';
+            if (value < 1) {
+                const seconds = Math.max(1, Math.round(value * 60));
+                return `${seconds} secondi`;
+            }
+            const rounded = Math.round(value * 10) / 10;
+            if (Number.isInteger(rounded)) return `${rounded} min`;
+            return `${rounded.toFixed(1).replace('.', ',')} min`;
+        }
+
+        function buildBookingTtsText(title, details) {
+            const parts = [];
+            if (title) parts.push(title);
+            if (details) parts.push(details);
+            return parts.join('\n\n');
+        }
+
+        function applyBookingText(title, details) {
+            const cleanedDetails = stripTitleFromDetails(title, details || '');
+            bookingStatusText.innerHTML = formatDisplayHtml(title, { useLineBreaks: false });
+            bookingStatusDetails.innerHTML = formatDisplayHtml(cleanedDetails, { useLineBreaks: true });
+            return cleanedDetails;
+        }
+
+        function showBookingStatus(state, text, details = '') {
+            bookingState = state;
+            bookingStatusOverlay.classList.add('active');
+            const cleanedDetails = applyBookingText(text, details);
+
+            // Reset UI elements
+            bookingSpinner.style.display = 'block';
+            bookingQueueButtons.style.display = 'none';
+            bookingCancelBtn.style.display = 'none';
+            bookingStatusText.classList.remove('success', 'warning');
+            policySelector.classList.add('hidden'); // Hide policy selector during booking
+
+            const ttsText = buildBookingTtsText(text, cleanedDetails);
+
+            switch (state) {
+                case 'waiting':
+                    // Show spinner, hide buttons
+                    bookingCancelBtn.style.display = 'block';
+                    break;
+                case 'confirmed':
+                    bookingSpinner.style.display = 'none';
+                    bookingStatusText.classList.add('success');
+                    break;
+                case 'waiting_taxi':
+                    bookingCancelBtn.style.display = 'block';
+                    speakTaxiMessage(ttsText, { interrupt: true });
+                    break;
+                case 'charging':
+                    bookingStatusText.classList.add('warning');
+                    bookingCancelBtn.style.display = 'block';
+                    speakTaxiMessage(ttsText, { interrupt: true });
+                    break;
+                case 'queue':
+                    bookingSpinner.style.display = 'none';
+                    bookingStatusText.classList.add('warning');
+                    bookingQueueButtons.style.display = 'flex';
+                    speakTaxiMessage(ttsText, { interrupt: true });
+                    break;
+                case 'queued':
+                    bookingStatusText.classList.add('success');
+                    bookingCancelBtn.style.display = 'block';
+                    speakTaxiMessage(ttsText, { interrupt: false });
+                    break;
+                case 'error':
+                    bookingStatusText.classList.add('warning');
+                    bookingCancelBtn.style.display = 'block';
+                    speakTaxiMessage(ttsText, { interrupt: true });
+                    break;
+            }
+        }
+
+        function updateQueueStatus(data) {
+            if (!bookingStatusOverlay.classList.contains('active')) return;
+
+            const fallbackLines = [];
+            if (data.queue_position !== undefined && data.queue_position !== null) {
+                fallbackLines.push(`📍 Posizione: **#${data.queue_position}**`);
+            }
+            if (data.queue_eta_minutes !== undefined && data.queue_eta_minutes !== null) {
+                const etaText = formatDurationMinutes(data.queue_eta_minutes);
+                fallbackLines.push(`⏱️ Tempo stimato: **${etaText}**`);
+            }
+
+            const details = data.message || fallbackLines.join('\n');
+            bookingStatusDetails.innerHTML = formatDisplayHtml(details, { useLineBreaks: true });
+
+            const newPos = typeof data.queue_position === 'number' ? data.queue_position : null;
+            if (newPos !== null) {
+                if (lastQueuePosition === null || newPos < lastQueuePosition) {
+                    const titleText = bookingStatusText.textContent || 'Aggiornamento coda';
+                    const ttsText = buildBookingTtsText(titleText, details);
+                    speakTaxiMessage(ttsText, { interrupt: false });
+                }
+                lastQueuePosition = newPos;
+            }
+        }
+
+        function hideBookingStatus() {
+            bookingStatusOverlay.classList.remove('active');
+            bookingState = 'idle';
+            updateStartButton();
+            setChatInputState(true);
+            lastQueuePosition = null;
+            // Show policy selector again if destination is selected
+            if (selectedPoi) {
+                policySelector.classList.remove('hidden');
+            }
+        }
+
+        function startActualRide() {
+            if (chatScreen.classList.contains('active')) return;
+            hideBookingStatus();
+
+            // Hide policy selector during active ride
+            policySelector.classList.add('hidden');
+
+            // Hide settings button during ride
+            settingsBtn.classList.add('hidden');
+
+            // Switch to chat screen
+            bookingScreen.classList.remove('active');
+            chatScreen.classList.add('active');
+
+            const etaMinutes = Number.isFinite(lastBookingEtaMinutes) ? lastBookingEtaMinutes : 15;
+
+            // Send RIDE_START trigger with POI destination
+            const trigger = {
+                type: 'trigger',
+                session_id: sessionId,
+                ride_id: rideId,
+                name: 'RIDE_START',
+                payload: {
+                    user_id: document.getElementById('userId').value,
+                    city: document.getElementById('city').value,
+                    destination: selectedPoi.poi_name || selectedPoi.name,
+                    poi_id: selectedPoi.poi_id || selectedPoi.id,
+                    poi_x: selectedPoi.x,
+                    poi_y: selectedPoi.y,
+                    eta_minutes: etaMinutes
+                }
+            };
+
+            ws.send(JSON.stringify(trigger));
+            addSystemMessage(`Corsa iniziata! Destinazione: ${selectedPoi.poi_name || selectedPoi.name}`);
+
+            // Update destination banner
+            updateCurrentDestination(selectedPoi.poi_name || selectedPoi.name);
+        }
+
+        // Queue response handlers
+        queueAcceptBtn.addEventListener('click', () => {
+            // Send queue acceptance to Unity
+            const response = {
+                type: 'risposta_coda_attesa',
+                session_id: sessionId,
+                payload: { accetta: true }
+            };
+            ws.send(JSON.stringify(response));
+            showBookingStatus('waiting', 'Elaborazione...', '');
+        });
+
+        queueRejectBtn.addEventListener('click', () => {
+            // Send queue rejection
+            const response = {
+                type: 'risposta_coda_attesa',
+                session_id: sessionId,
+                payload: { accetta: false }
+            };
+            ws.send(JSON.stringify(response));
+            hideBookingStatus();
+        });
+
+        bookingCancelBtn.addEventListener('click', () => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                hideBookingStatus();
+                return;
+            }
+
+            // Send cancellation request to backend
+            const cancelRequest = {
+                type: 'annulla_prenotazione',
+                session_id: sessionId
+            };
+            ws.send(JSON.stringify(cancelRequest));
+            console.log('Cancellation request sent:', cancelRequest);
+
+            // Show cancelling status
+            showBookingStatus('waiting', 'Annullamento in corso...', '');
+        });
+
+        // End Ride
+        endRideBtn.addEventListener('click', () => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+            const trigger = {
+                type: 'trigger',
+                session_id: sessionId,
+                ride_id: rideId,
+                name: 'RIDE_END',
+                payload: {}
+            };
+
+            ws.send(JSON.stringify(trigger));
+
+            // Disable button to prevent double-click
+            endRideBtn.disabled = true;
+
+            // Add a system message to show the request was sent
+            // The server will respond with the redirect command
+            console.log('End ride request sent, waiting for server response...');
+        });
+
+        // Send message
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            const msg = {
+                type: 'user_message',
+                session_id: sessionId,
+                user_id: document.getElementById('userId').value,
+                ride_id: rideId,
+                city: document.getElementById('city').value,
+                taxi: { x: 0, y: 0 },
+                text: text
+            };
+
+            ws.send(JSON.stringify(msg));
+            addUserMessage(text);
+            messageInput.value = '';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Helper to block/unblock inputs
+        function setChatInputState(enabled, placeholder = null) {
+            const voiceSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+
+            // Main chat elements
+            messageInput.disabled = !enabled;
+            sendBtn.disabled = !enabled;
+            if (voiceBtn && voiceSupported) voiceBtn.disabled = !enabled;
+
+            // Pre-chat elements
+            preChatInput.disabled = !enabled;
+            preChatSendBtn.disabled = !enabled;
+            if (preChatVoiceBtn && voiceSupported) preChatVoiceBtn.disabled = !enabled;
+
+            if (!enabled) {
+                const text = placeholder || "Seleziona un'opzione...";
+                messageInput.placeholder = text;
+                preChatInput.placeholder = text;
+            } else {
+                messageInput.placeholder = "Scrivi un messaggio...";
+                preChatInput.placeholder = "Dimmi dove vuoi andare...";
+            }
+        }
+
+        // Handle response
+        function handleResponse(data) {
+            if (data.type === 'assistant_response') {
+                const messageText = typeof data.message === 'string' ? data.message.trim() : '';
+                if (data.message_type === 'explainability') {
+                    if (messageText) {
+                        addSystemMessage(messageText);
+                    }
+                } else if (messageText) {
+                    addAssistantMessage(messageText, data.ui_options);
+                }
+
+                // Keep input enabled even when options are present
+                // (removed blocking logic to allow typing/voice alongside buttons)
+
+                if (data.commands && data.commands.length > 0) {
+                    data.commands.forEach(cmd => handleCommand(cmd));
+                }
+            } else if (data.type === 'error') {
+                addSystemMessage('Errore: ' + data.message);
+            }
+        }
+
+        // Handle commands
+        function handleCommand(cmd) {
+            console.log('Command:', cmd);
+
+            switch (cmd.type) {
+                case 'PLAY_MUSIC':
+                    playMusic(cmd.payload.genre);
+                    break;
+                case 'STOP_MUSIC':
+                    stopMusic();
+                    break;
+                case 'PAUSE_MUSIC':
+                    pauseMusic();
+                    break;
+                case 'RESUME_MUSIC':
+                    resumeMusic();
+                    break;
+                case 'SET_VOLUME':
+                    setVolume(cmd.payload.volume);
+                    break;
+                case 'REROUTE_TO':
+                    // Update destination banner when destination changes during ride
+                    if (cmd.payload) {
+                        const newDest = cmd.payload.poi_name || cmd.payload.name;
+                        if (newDest) {
+                            updateCurrentDestination(newDest);
+                        }
+                    }
+                    break;
+                case 'redirect_to_main':
+                    // Torna alla schermata di booking dopo il delay specificato
+                    const delay = cmd.delay_ms || 3000;
+                    console.log(`Redirect to main in ${delay}ms`);
+                    setTimeout(() => {
+                        endRideAndReturnToBooking();
+                    }, delay);
+                    break;
+            }
+        }
+
+        // Funzione per terminare la corsa e tornare alla schermata di booking
+        function endRideAndReturnToBooking() {
+            console.log('Ending ride and returning to booking screen');
+
+            // Stop music
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            musicBar.classList.remove('active');
+            musicPlaying = false;
+            musicPaused = false;
+
+            // Switch to booking screen
+            chatScreen.classList.remove('active');
+            bookingScreen.classList.add('active');
+
+            // Clear messages
+            messagesDiv.innerHTML = '';
+
+            // Show settings button
+            settingsBtn.classList.remove('hidden');
+
+            // Clear selected POI - BOTH visually and the variable
+            selectedPoi = null;  // Clear the variable!
+            selectedPoiName.textContent = '-';
+            selectedDestination.classList.add('hidden');
+
+            // Clear pre-chat messages
+            preChatMessages.innerHTML = '';
+            addPreChatMessage('Ciao! 👋 Dimmi dove vuoi andare o cosa cerchi.', 'assistant');
+
+            // Reset destination banner
+            currentDestinationBanner.classList.remove('active');
+            currentDestName.textContent = '-';
+
+            // Reset booking state
+            bookingState = 'idle';
+            rideId = null;
+
+            // Hide booking overlay if visible
+            hideBookingStatus();
+
+            // Update button state
+            updateStartButton();
+            endRideBtn.disabled = false;  // Re-enable for next ride
+
+            // New session for next ride
+            sessionId = 'S' + Date.now();
+            console.log('New session ID:', sessionId);
+        }
+
+        // Music functions
+        function playMusic(genre) {
+            audioPlayer.src = `${apiBase}/music/${genre}`;
+            audioPlayer.volume = volumeSlider.value / 10;
+            audioPlayer.play().catch(e => console.log('Audio play failed:', e));
+
+            musicGenre.textContent = genre;
+            musicBar.classList.add('active');
+            musicPlaying = true;
+            musicPaused = false;
+            pauseBtn.textContent = '⏸️';
+        }
+
+        function stopMusic() {
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            musicBar.classList.remove('active');
+            musicPlaying = false;
+            musicPaused = false;
+        }
+
+        function pauseMusic() {
+            audioPlayer.pause();
+            musicPaused = true;
+            pauseBtn.textContent = '▶️';
+        }
+
+        function resumeMusic() {
+            audioPlayer.play();
+            musicPaused = false;
+            pauseBtn.textContent = '⏸️';
+        }
+
+        function setVolume(vol) {
+            volumeSlider.value = vol;
+            audioPlayer.volume = vol / 10;
+        }
+
+        // Music bar controls
+        pauseBtn.addEventListener('click', () => {
+            if (!musicPlaying) return;
+
+            if (musicPaused) {
+                sendUIAction('resume_music');
+            } else {
+                sendUIAction('pause_music');
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (musicPlaying) {
+                sendUIAction('stop_music');
+            }
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            audioPlayer.volume = volumeSlider.value / 10;
+        });
+
+        volumeSlider.addEventListener('change', () => {
+            // Send volume change to backend
+            if (musicPlaying) {
+                sendUIAction('volume_set', { volume: parseInt(volumeSlider.value) });
+            }
+        });
+
+        // Send UI action
+        function sendUIAction(actionId, payload = {}) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+            // Re-enable input after selection
+            setChatInputState(true);
+
+            const msg = {
+                type: 'ui_action',
+                session_id: sessionId,
+                action_id: actionId,
+                payload: payload
+            };
+
+            ws.send(JSON.stringify(msg));
+        }
+
+        // Message functions
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'message user';
+            div.textContent = text;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDisplayHtml(text, options = {}) {
+            const useLineBreaks = options.useLineBreaks !== false;
+            const escaped = escapeHtml(text);
+            const bolded = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            return useLineBreaks ? bolded.replace(/\n/g, '<br>') : bolded;
+        }
+
+        function normalizeTextForCompare(text) {
+            let cleaned = String(text || '').replace(/\*\*/g, '');
+            try {
+                cleaned = cleaned.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '');
+            } catch (err) {
+                // Ignore emoji strip failures
+            }
+            return cleaned.replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+
+        function stripTitleFromDetails(title, details) {
+            if (!details) return '';
+            const lines = details.split(/\n+/);
+            if (lines.length === 0) return details;
+            const normalizedTitle = normalizeTextForCompare(title);
+            const normalizedFirst = normalizeTextForCompare(lines[0]);
+            if (normalizedTitle && normalizedTitle === normalizedFirst) {
+                return lines.slice(1).join('\n').trim();
+            }
+            return details;
+        }
+
+        const ttsTabId = `tts-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const ttsLockKey = 'taxichat_tts_lock';
+        const ttsLockTtlMs = 7000;
+
+        function readTtsLock() {
+            try {
+                return JSON.parse(localStorage.getItem(ttsLockKey));
+            } catch (err) {
+                return null;
+            }
+        }
+
+        function isTtsLockValid(lock) {
+            return lock && lock.owner && lock.ts && (Date.now() - lock.ts) < ttsLockTtlMs;
+        }
+
+        function acquireTtsLock() {
+            const lock = readTtsLock();
+            if (isTtsLockValid(lock) && lock.owner !== ttsTabId) {
+                return false;
+            }
+            localStorage.setItem(ttsLockKey, JSON.stringify({ owner: ttsTabId, ts: Date.now() }));
+            return true;
+        }
+
+        function refreshTtsLock() {
+            if (!acquireTtsLock()) return false;
+            return true;
+        }
+
+        function releaseTtsLock() {
+            const lock = readTtsLock();
+            if (lock && lock.owner === ttsTabId) {
+                localStorage.removeItem(ttsLockKey);
+            }
+        }
+
+        function shouldSpeakTaxiMessage() {
+            const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true;
+            return voiceEnabled &&
+                ('speechSynthesis' in window) &&
+                (document.visibilityState === 'visible') &&
+                hasFocus &&
+                (chatScreen.classList.contains('active') || bookingStatusOverlay.classList.contains('active'));
+        }
+
+        function normalizeForSpeech(text) {
+            if (!text) return '';
+            let cleaned = String(text);
+            try {
+                cleaned = cleaned.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '');
+            } catch (err) {
+                // Ignore emoji strip failures
+            }
+            cleaned = cleaned.replace(/\*\*/g, '');
+            cleaned = cleaned.replace(/\r\n/g, '\n');
+            cleaned = cleaned.replace(/[ \t]+/g, ' ');
+            cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+            return cleaned.trim();
+        }
+
+        function splitForSpeech(text) {
+            const normalized = normalizeForSpeech(text);
+            if (!normalized) return [];
+            const paragraphs = normalized.split(/\n\s*\n/);
+            const segments = [];
+
+            paragraphs.forEach((paragraph) => {
+                const lines = paragraph
+                    .split(/\n/)
+                    .map(line => line.trim())
+                    .filter(Boolean);
+                lines.forEach((line) => segments.push(line));
+            });
+
+            return segments;
+        }
+
+        const ttsManager = (() => {
+            const queue = [];
+            let isSpeaking = false;
+            let currentUtterance = null;
+            let watchdogId = null;
+            let lockRefreshId = null;
+            let lockRetryId = null;
+            let debug = localStorage.getItem('taxichat_tts_debug') === 'true';
+
+            function log(message, data) {
+                if (!debug) return;
+                if (data !== undefined) {
+                    console.log('[TTS]', message, data);
+                } else {
+                    console.log('[TTS]', message);
+                }
+            }
+
+            function clearWatchdog() {
+                if (watchdogId) {
+                    clearTimeout(watchdogId);
+                    watchdogId = null;
+                }
+            }
+
+            function clearLockRefresh() {
+                if (lockRefreshId) {
+                    clearInterval(lockRefreshId);
+                    lockRefreshId = null;
+                }
+            }
+
+            function clearLockRetry() {
+                if (lockRetryId) {
+                    clearTimeout(lockRetryId);
+                    lockRetryId = null;
+                }
+            }
+
+            function reset(options = {}) {
+                const clearQueue = options.clearQueue !== false;
+                if (clearQueue) queue.length = 0;
+                clearWatchdog();
+                clearLockRefresh();
+                clearLockRetry();
+                isSpeaking = false;
+                currentUtterance = null;
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+                releaseTtsLock();
+                log('reset');
+            }
+
+            function startWatchdog(text) {
+                clearWatchdog();
+                const timeoutMs = Math.min(30000, Math.max(8000, 500 + text.length * 80));
+                watchdogId = setTimeout(() => {
+                    log('watchdog_timeout', text);
+                    reset({ clearQueue: false });
+                    setTimeout(speakNext, 150);
+                }, timeoutMs);
+            }
+
+            function handleUtteranceDone(utterance, reason) {
+                if (utterance !== currentUtterance) return;
+                clearWatchdog();
+                clearLockRefresh();
+                isSpeaking = false;
+                currentUtterance = null;
+                releaseTtsLock();
+                log('done:' + reason);
+                setTimeout(speakNext, 120);
+            }
+
+            function speakNext() {
+                if (isSpeaking || queue.length === 0) return;
+                if (!shouldSpeakTaxiMessage()) {
+                    queue.length = 0;
+                    return;
+                }
+                if (!('speechSynthesis' in window)) return;
+
+                if (!acquireTtsLock()) {
+                    log('lock_busy');
+                    if (!lockRetryId) {
+                        lockRetryId = setTimeout(() => {
+                            lockRetryId = null;
+                            speakNext();
+                        }, 800);
+                    }
+                    return;
+                }
+
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                    window.speechSynthesis.cancel();
+                }
+
+                if (!preferredVoice) {
+                    loadSpeechVoices();
+                }
+
+                const nextText = queue.shift();
+                if (!nextText) {
+                    speakNext();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(nextText);
+                currentUtterance = utterance;
+                const isQuestion = /\?\s*$/.test(nextText);
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                    utterance.lang = preferredVoice.lang;
+                } else {
+                    utterance.lang = 'it-IT';
+                }
+                utterance.rate = 1;
+                utterance.pitch = isQuestion ? 1.15 : 1;
+
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    clearLockRetry();
+                    clearLockRefresh();
+                    lockRefreshId = setInterval(() => {
+                        refreshTtsLock();
+                    }, 2000);
+                    startWatchdog(nextText);
+                    log('start', nextText);
+                };
+                utterance.onend = () => handleUtteranceDone(utterance, 'end');
+                utterance.onerror = () => handleUtteranceDone(utterance, 'error');
+
+                try {
+                    window.speechSynthesis.speak(utterance);
+                } catch (err) {
+                    log('speak_error', err);
+                    handleUtteranceDone(utterance, 'exception');
+                }
+            }
+
+            function enqueue(text, options = {}) {
+                if (!text || !shouldSpeakTaxiMessage()) return;
+                if (options.interrupt) {
+                    reset({ clearQueue: true });
+                }
+
+                const segments = splitForSpeech(text);
+                if (!segments.length) return;
+
+                const maxQueue = 30;
+                segments.forEach(segment => {
+                    if (queue.length < maxQueue) {
+                        queue.push(segment);
+                    }
+                });
+
+                if (!isSpeaking) {
+                    speakNext();
+                }
+            }
+
+            return {
+                enqueue,
+                reset,
+                setDebug: (value) => { debug = value; }
+            };
+        })();
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                ttsManager.reset({ clearQueue: true });
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            ttsManager.reset({ clearQueue: true });
+            releaseTtsLock();
+        });
+
+        function speakTaxiMessage(text, options = {}) {
+            if (!shouldSpeakTaxiMessage()) return;
+            ttsManager.enqueue(text, options);
+        }
+
+        function addAssistantMessage(text, options = []) {
+            const div = document.createElement('div');
+            div.className = 'message assistant';
+
+            const pre = document.createElement('pre');
+            pre.innerHTML = formatDisplayHtml(text, { useLineBreaks: false });
+            div.appendChild(pre);
+
+            if (options && options.length > 0) {
+                const btnsRow = document.createElement('div');
+                btnsRow.className = 'buttons-row';
+
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt.label;
+                    btn.addEventListener('click', () => sendUIAction(opt.id));
+                    btnsRow.appendChild(btn);
+                });
+
+                // Add Cancel button only if not already present
+                const hasCancel = options.some(opt =>
+                    opt.label.toLowerCase().includes('annulla') ||
+                    opt.id === 'cancel'
+                );
+                if (!hasCancel) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'option-btn';
+                    cancelBtn.textContent = '❌ Annulla';
+                    cancelBtn.style.opacity = '0.7';
+                    cancelBtn.addEventListener('click', () => {
+                        btnsRow.style.display = 'none';
+                        setChatInputState(true);
+                    });
+                    btnsRow.appendChild(cancelBtn);
+                }
+
+                div.appendChild(btnsRow);
+            }
+
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            speakTaxiMessage(text);
+        }
+
+        function addSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'message system';
+            div.innerHTML = formatDisplayHtml(text, { useLineBreaks: true });
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            speakTaxiMessage(text);
+        }
+
+        // ==================== VOICE TO TEXT ====================
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+
+        let recognition = null;
+        let isRecording = false;
+        let hasFinalResult = false;  // Track if we got a final transcription
+
+        // Check if Web Speech API is supported
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'it-IT';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceStatus.textContent = '🔴 Sto ascoltando...';
+                voiceStatus.classList.add('active');
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Show interim results in the input field
+                if (finalTranscript) {
+                    messageInput.value = finalTranscript;
+                    voiceStatus.textContent = '✓ Invio in corso...';
+                    hasFinalResult = true;
+                } else if (interimTranscript) {
+                    messageInput.value = interimTranscript;
+                    voiceStatus.textContent = '🎙️ ' + interimTranscript;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+
+                let errorMessage = 'Errore di riconoscimento';
+                switch (event.error) {
+                    case 'no-speech':
+                        errorMessage = 'Nessun audio rilevato';
+                        break;
+                    case 'audio-capture':
+                        errorMessage = 'Microfono non disponibile';
+                        break;
+                    case 'not-allowed':
+                        errorMessage = 'Permesso microfono negato';
+                        break;
+                    case 'network':
+                        errorMessage = 'Errore di rete';
+                        break;
+                }
+
+                voiceStatus.textContent = '⚠️ ' + errorMessage;
+                setTimeout(() => {
+                    voiceStatus.classList.remove('active');
+                }, 3000);
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+
+                // Auto-send if we have transcribed text
+                if (hasFinalResult && messageInput.value.trim()) {
+                    sendMessage();
+                    voiceStatus.textContent = '✓ Messaggio inviato!';
+                    setTimeout(() => {
+                        voiceStatus.classList.remove('active');
+                    }, 1500);
+                } else if (messageInput.value.trim()) {
+                    // Had interim results but no final - still send
+                    sendMessage();
+                    voiceStatus.textContent = '✓ Messaggio inviato!';
+                    setTimeout(() => {
+                        voiceStatus.classList.remove('active');
+                    }, 1500);
+                } else {
+                    voiceStatus.classList.remove('active');
+                }
+
+                hasFinalResult = false;  // Reset for next recording
+            };
+
+            // Voice button click handler
+            voiceBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    messageInput.value = '';
+                    hasFinalResult = false;
+                    recognition.start();
+                }
+            });
+        } else {
+            // Web Speech API not supported
+            voiceBtn.disabled = true;
+            voiceBtn.title = 'Il tuo browser non supporta il riconoscimento vocale';
+        }
+
+        // ==================== NEW BOOKING SCREEN FEATURES ====================
+
+        // Tab switching
+        tabSearch.addEventListener('click', () => switchTab('search'));
+        tabChat.addEventListener('click', () => switchTab('chat'));
+
+        function switchTab(tab) {
+            if (tab === 'search') {
+                tabSearch.classList.add('active');
+                tabChat.classList.remove('active');
+                searchMode.classList.add('active');
+                chatMode.classList.remove('active');
+                // Show user section in search mode
+                bookingScreen.classList.remove('chat-mode');
+            } else {
+                tabChat.classList.add('active');
+                tabSearch.classList.remove('active');
+                chatMode.classList.add('active');
+                searchMode.classList.remove('active');
+                // Hide user section in chat mode for more space
+                bookingScreen.classList.add('chat-mode');
+            }
+        }
+
+        // POI Search with debounce
+        poiSearch.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+
+            // Clear previous timer
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+
+            if (query.length < 2) {
+                searchDropdown.classList.remove('active');
+                return;
+            }
+
+            // Debounce search (300ms)
+            searchDebounceTimer = setTimeout(() => {
+                performPoiSearch(query);
+            }, 300);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!poiSearch.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.classList.remove('active');
+            }
+        });
+
+        async function performPoiSearch(query) {
+            const city = document.getElementById('city').value || 'Palermo';
+
+            try {
+                const userIdValue = document.getElementById('userId').value || '';
+                const response = await fetch(`${apiBase}/api/pois/search?q=${encodeURIComponent(query)}&limit=5&user_id=${encodeURIComponent(userIdValue)}`);
+                const data = await response.json();
+
+                if (data.pois && data.pois.length > 0) {
+                    renderSearchResults(data.pois);
+                } else {
+                    searchDropdown.innerHTML = '<div class="search-item"><span class="search-item-details"><span class="search-item-name">Nessun risultato</span></span></div>';
+                    searchDropdown.classList.add('active');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                searchDropdown.classList.remove('active');
+            }
+        }
+
+        function renderSearchResults(pois) {
+            searchDropdown.innerHTML = pois.map(poi => `
+                <div class="search-item" data-poi='${JSON.stringify(poi)}'>
+                    <span class="search-item-icon">📍</span>
+                    <div class="search-item-details">
+                        <div class="search-item-name">${poi.name}</div>
+                        <div class="search-item-category">${poi.category || ''}</div>
+                    </div>
+                    ${poi.rating ? `<span class="search-item-rating">⭐ ${poi.rating.toFixed(1)}</span>` : ''}
+                </div>
+            `).join('');
+
+            // Add click handlers
+            searchDropdown.querySelectorAll('.search-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const poi = JSON.parse(item.dataset.poi);
+                    selectPoi(poi);
+                    searchDropdown.classList.remove('active');
+                    poiSearch.value = '';
+                });
+            });
+
+            searchDropdown.classList.add('active');
+        }
+
+        // POI Selection
+        function selectPoi(poi) {
+            selectedPoi = poi;
+            selectedPoiName.textContent = poi.name || poi.poi_name;
+            selectedDestination.classList.remove('hidden');
+            policySelector.classList.remove('hidden'); // Show policy selector
+            updateStartButton();
+        }
+
+        function clearSelectedPoi() {
+            selectedPoi = null;
+            selectedPoiName.textContent = '-';
+            selectedDestination.classList.add('hidden');
+            policySelector.classList.add('hidden'); // Hide policy selector
+            // Reset policy to Comfort
+            selectedPolicy = 'Comfort';
+            policyButtons.forEach(b => b.classList.remove('active'));
+            document.querySelector('.policy-btn[data-policy="Comfort"]').classList.add('active');
+            updateStartButton();
+        }
+
+        clearDestination.addEventListener('click', clearSelectedPoi);
+
+        function updateStartButton() {
+            const wsConnected = ws && ws.readyState === WebSocket.OPEN;
+            startRideBtn.disabled = !wsConnected || !selectedPoi;
+        }
+
+        // Pre-ride chat
+        preChatSendBtn.addEventListener('click', sendPreChatMessage);
+        preChatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendPreChatMessage();
+        });
+
+        function sendPreChatMessage() {
+            const text = preChatInput.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            // Add user message to mini chat
+            addPreChatMessage(text, 'user');
+            preChatInput.value = '';
+
+            // Send pre_ride_message to backend
+            const msg = {
+                type: 'pre_ride_message',
+                session_id: sessionId,
+                user_id: document.getElementById('userId').value,
+                city: document.getElementById('city').value,
+                text: text
+            };
+
+            ws.send(JSON.stringify(msg));
+        }
+
+        function addPreChatMessage(text, role, options = []) {
+            const div = document.createElement('div');
+            div.className = `mini-message ${role}`;
+            if (role === 'assistant') {
+                div.innerHTML = formatDisplayHtml(text, { useLineBreaks: true });
+            } else {
+                div.textContent = text;
+            }
+
+            // Add option buttons if assistant
+            if (role === 'assistant' && options.length > 0) {
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'mini-options';
+
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'mini-option-btn';
+                    btn.textContent = opt.label;
+                    btn.addEventListener('click', () => handlePreChatOption(opt));
+                    optionsDiv.appendChild(btn);
+                });
+
+                // Add Cancel button only if not already present
+                const hasCancel = options.some(opt =>
+                    opt.label.toLowerCase().includes('annulla') ||
+                    opt.id === 'cancel'
+                );
+                if (!hasCancel) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'mini-option-btn';
+                    cancelBtn.textContent = '❌ Annulla';
+                    cancelBtn.style.opacity = '0.7';
+                    cancelBtn.addEventListener('click', () => {
+                        optionsDiv.style.display = 'none';
+                        setChatInputState(true);
+                    });
+                    optionsDiv.appendChild(cancelBtn);
+                }
+
+                div.appendChild(optionsDiv);
+            }
+
+            preChatMessages.appendChild(div);
+            preChatMessages.scrollTop = preChatMessages.scrollHeight;
+        }
+
+        function handlePreChatOption(opt) {
+            if (opt.id.startsWith('poi:')) {
+                // POI selection - send to backend
+                const msg = {
+                    type: 'ui_action',
+                    session_id: sessionId,
+                    action_id: opt.id,
+                    payload: {}
+                };
+                ws.send(JSON.stringify(msg));
+            } else if (opt.id.startsWith('quick:')) {
+                // Quick action - send as message
+                const text = opt.label.replace(/[🍕🍺🛍️💊]/g, '').trim();
+                preChatInput.value = text;
+                sendPreChatMessage();
+            } else if (opt.id === 'cancel') {
+                addPreChatMessage('Va bene! Dimmi dove vuoi andare.', 'assistant');
+            }
+        }
+
+        function handlePreRideResponse(data) {
+            if (data.type === 'assistant_response') {
+                // Add assistant message to mini chat
+                const messageText = typeof data.message === 'string' ? data.message.trim() : '';
+                if (messageText) {
+                    addPreChatMessage(messageText, 'assistant', data.ui_options || []);
+                }
+
+                // Keep input enabled even when options are present
+                // (removed blocking logic to allow typing/voice alongside buttons)
+
+                // Check if a POI was selected
+                if (data.selected_poi && data.selected_poi.poi_id) {
+                    selectPoi(data.selected_poi);
+                }
+
+                // Also check commands for REROUTE_TO
+                if (data.commands) {
+                    data.commands.forEach(cmd => {
+                        if (cmd.type === 'REROUTE_TO' && cmd.payload) {
+                            selectPoi(cmd.payload);
+                            // Update destination banner during ride
+                            updateCurrentDestination(cmd.payload.poi_name || cmd.payload.name);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Initialize with welcome message in chat mode
+        setTimeout(() => {
+            if (preChatMessages.children.length === 0) {
+                addPreChatMessage('Ciao! 👋 Dimmi dove vuoi andare o cosa cerchi.', 'assistant');
+            }
+        }, 500);
+
+        // ==================== SETTINGS SCREEN ====================
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsScreen = document.getElementById('settingsScreen');
+        const settingsBackBtn = document.getElementById('settingsBackBtn');
+        const settingsCancelBtn = document.getElementById('settingsCancelBtn');
+        const settingsSaveBtn = document.getElementById('settingsSaveBtn');
+        const modelSelect = document.getElementById('modelSelect');
+        const settingsStatus = document.getElementById('settingsStatus');
+        const currentProviderEl = document.getElementById('currentProvider');
+        const currentModelEl = document.getElementById('currentModel');
+        const providerOllama = document.getElementById('providerOllama');
+        const providerOpenRouter = document.getElementById('providerOpenRouter');
+        const voiceToggle = document.getElementById('voiceToggle');
+        const ttsResetBtn = document.getElementById('ttsResetBtn');
+
+        let llmModels = {
+            ollama: [],
+            openrouter: []
+        };
+        let currentSettings = {
+            provider: 'ollama',
+            model: ''
+        };
+
+        const voiceSettingKey = 'taxichat_voice_enabled';
+        let voiceEnabled = false;
+        let availableVoices = [];
+        let preferredVoice = null;
+
+        function loadSpeechVoices() {
+            if (!('speechSynthesis' in window)) return;
+            availableVoices = window.speechSynthesis.getVoices() || [];
+            preferredVoice = availableVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('it')) || null;
+        }
+
+        function initVoiceSettings() {
+            const savedVoice = localStorage.getItem(voiceSettingKey);
+            voiceEnabled = savedVoice === 'true';
+            if (voiceToggle) {
+                voiceToggle.checked = voiceEnabled;
+            }
+            loadSpeechVoices();
+        }
+
+        function setVoiceEnabled(enabled) {
+            voiceEnabled = enabled;
+            localStorage.setItem(voiceSettingKey, enabled ? 'true' : 'false');
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+        }
+
+        // Load saved settings from localStorage on startup
+        async function initLLMSettings() {
+            const savedSettings = localStorage.getItem('taxichat_llm_settings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    console.log('Restoring saved LLM settings:', settings);
+
+                    // Apply saved settings to backend
+                    const response = await fetch(`${apiBase}/llm/set-model`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            provider: settings.provider,
+                            model: settings.model
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log('LLM settings restored successfully:', data.provider, data.model);
+                    }
+                } catch (error) {
+                    console.error('Error restoring LLM settings:', error);
+                }
+            }
+        }
+
+        // Initialize LLM settings on page load
+        initLLMSettings();
+        initVoiceSettings();
+
+        // Open settings
+        settingsBtn.addEventListener('click', async () => {
+            bookingScreen.classList.remove('active');
+            settingsScreen.classList.add('active');
+            await loadLLMSettings();
+        });
+
+        // Close settings
+        function closeSettingsScreen() {
+            settingsScreen.classList.remove('active');
+            bookingScreen.classList.add('active');
+            settingsStatus.className = 'settings-status';
+            settingsStatus.textContent = '';
+        }
+
+        settingsBackBtn.addEventListener('click', closeSettingsScreen);
+        settingsCancelBtn.addEventListener('click', closeSettingsScreen);
+        if (voiceToggle) {
+            voiceToggle.addEventListener('change', () => {
+                setVoiceEnabled(voiceToggle.checked);
+            });
+        }
+        if (ttsResetBtn) {
+            ttsResetBtn.addEventListener('click', () => {
+                ttsManager.reset({ clearQueue: true });
+            });
+        }
+
+        // Provider selection
+        providerOllama.addEventListener('click', () => selectProvider('ollama'));
+        providerOpenRouter.addEventListener('click', () => selectProvider('openrouter'));
+
+        function selectProvider(provider) {
+            if (provider === 'ollama') {
+                providerOllama.classList.add('active');
+                providerOpenRouter.classList.remove('active');
+                providerOllama.querySelector('input').checked = true;
+            } else {
+                providerOpenRouter.classList.add('active');
+                providerOllama.classList.remove('active');
+                providerOpenRouter.querySelector('input').checked = true;
+            }
+            updateModelDropdown(provider);
+        }
+
+        function updateModelDropdown(provider) {
+            const models = llmModels[provider] || [];
+            modelSelect.innerHTML = '';
+
+            if (models.length === 0) {
+                modelSelect.innerHTML = '<option value="">Nessun modello disponibile</option>';
+                return;
+            }
+
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                // Format model name for display
+                const displayName = model.includes('/') ? model.split('/').pop().replace(':free', ' (free)') : model;
+                option.textContent = displayName;
+                modelSelect.appendChild(option);
+            });
+
+            // Select current model if it matches
+            if (currentSettings.provider === provider && currentSettings.model) {
+                modelSelect.value = currentSettings.model;
+            }
+        }
+
+        async function loadLLMSettings() {
+            settingsStatus.className = 'settings-status loading';
+            settingsStatus.textContent = '⏳ Caricamento...';
+
+            try {
+                const response = await fetch(`${apiBase}/llm/models`);
+                const data = await response.json();
+
+                currentSettings.provider = data.current_provider || 'ollama';
+                currentSettings.model = data.current_model || '';
+
+                // Update current status display
+                currentProviderEl.textContent = currentSettings.provider === 'openrouter' ? 'OpenRouter' : 'Ollama';
+                currentModelEl.textContent = currentSettings.model || '-';
+
+                // Populate models
+                llmModels.openrouter = data.openrouter_models || [];
+                llmModels.ollama = data.ollama_model ? [data.ollama_model] : ['llama3.1:8b'];
+
+                // Select current provider
+                selectProvider(currentSettings.provider);
+
+                // Select current model in dropdown
+                setTimeout(() => {
+                    if (currentSettings.model) {
+                        modelSelect.value = currentSettings.model;
+                    }
+                }, 50);
+
+                settingsStatus.className = 'settings-status';
+                settingsStatus.textContent = '';
+
+            } catch (error) {
+                console.error('Error loading LLM settings:', error);
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '❌ Errore nel caricamento';
+            }
+        }
+
+        // Save settings
+        settingsSaveBtn.addEventListener('click', async () => {
+            const selectedProvider = document.querySelector('input[name="provider"]:checked')?.value || 'ollama';
+            const selectedModel = modelSelect.value;
+
+            if (!selectedModel) {
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '⚠️ Seleziona un modello';
+                return;
+            }
+
+            settingsSaveBtn.disabled = true;
+            settingsStatus.className = 'settings-status loading';
+            settingsStatus.textContent = '⏳ Salvataggio in corso...';
+
+            try {
+                const response = await fetch(`${apiBase}/llm/set-model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider: selectedProvider,
+                        model: selectedModel
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentSettings.provider = data.provider;
+                    currentSettings.model = data.model;
+                    currentProviderEl.textContent = data.provider === 'openrouter' ? 'OpenRouter' : 'Ollama';
+                    currentModelEl.textContent = data.model;
+
+                    // Save to localStorage for persistence
+                    localStorage.setItem('taxichat_llm_settings', JSON.stringify({
+                        provider: data.provider,
+                        model: data.model
+                    }));
+                    console.log('LLM settings saved to localStorage');
+
+                    settingsStatus.className = 'settings-status success';
+                    settingsStatus.textContent = '✅ Impostazioni salvate!';
+
+                    // Auto-close after success
+                    setTimeout(closeSettingsScreen, 1500);
+                } else {
+                    throw new Error(data.error || 'Errore sconosciuto');
+                }
+
+            } catch (error) {
+                console.error('Error saving LLM settings:', error);
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '❌ Errore: ' + error.message;
+            } finally {
+                settingsSaveBtn.disabled = false;
+            }
+        });
+
+        // ==================== CUSTOM MODELS MANAGEMENT ====================
+        const customModelInput = document.getElementById('customModelInput');
+        const addCustomModelBtn = document.getElementById('addCustomModelBtn');
+        const customModelsList = document.getElementById('customModelsList');
+
+        // Load custom models from localStorage
+        function getCustomModels() {
+            const saved = localStorage.getItem('taxichat_custom_models');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // Save custom models to localStorage
+        function saveCustomModels(models) {
+            localStorage.setItem('taxichat_custom_models', JSON.stringify(models));
+        }
+
+        // Render custom models list
+        function renderCustomModelsList() {
+            const customModels = getCustomModels();
+            customModelsList.innerHTML = '';
+
+            if (customModels.length === 0) {
+                customModelsList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">Nessun modello personalizzato aggiunto</div>';
+                return;
+            }
+
+            customModels.forEach((model, index) => {
+                const item = document.createElement('div');
+                item.className = 'custom-model-item';
+                item.innerHTML = `
+                    <span class="model-name">${model}</span>
+                    <button class="remove-model-btn" data-index="${index}" title="Rimuovi">×</button>
+                `;
+                customModelsList.appendChild(item);
+            });
+
+            // Add remove handlers
+            customModelsList.querySelectorAll('.remove-model-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    removeCustomModel(index);
+                });
+            });
+        }
+
+        // Add custom model
+        function addCustomModel() {
+            const modelName = customModelInput.value.trim();
+
+            if (!modelName) {
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '⚠️ Inserisci il nome del modello';
+                setTimeout(() => {
+                    settingsStatus.className = 'settings-status';
+                    settingsStatus.textContent = '';
+                }, 2000);
+                return;
+            }
+
+            const customModels = getCustomModels();
+
+            // Check for duplicates
+            if (customModels.includes(modelName)) {
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '⚠️ Modello già presente';
+                setTimeout(() => {
+                    settingsStatus.className = 'settings-status';
+                    settingsStatus.textContent = '';
+                }, 2000);
+                return;
+            }
+
+            // Add model
+            customModels.push(modelName);
+            saveCustomModels(customModels);
+
+            // Update UI
+            customModelInput.value = '';
+            renderCustomModelsList();
+
+            // Update dropdown to include new model
+            const selectedProvider = document.querySelector('input[name="provider"]:checked')?.value || 'openrouter';
+            updateModelDropdown(selectedProvider);
+
+            // Show success
+            settingsStatus.className = 'settings-status success';
+            settingsStatus.textContent = '✅ Modello aggiunto!';
+            setTimeout(() => {
+                settingsStatus.className = 'settings-status';
+                settingsStatus.textContent = '';
+            }, 2000);
+        }
+
+        // Remove custom model
+        function removeCustomModel(index) {
+            const customModels = getCustomModels();
+            customModels.splice(index, 1);
+            saveCustomModels(customModels);
+            renderCustomModelsList();
+
+            // Update dropdown
+            const selectedProvider = document.querySelector('input[name="provider"]:checked')?.value || 'openrouter';
+            updateModelDropdown(selectedProvider);
+        }
+
+        // Add button click handler
+        addCustomModelBtn.addEventListener('click', addCustomModel);
+
+        // Enter key to add model
+        customModelInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomModel();
+            }
+        });
+
+        // Override updateModelDropdown to include custom models
+        const originalUpdateModelDropdown = updateModelDropdown;
+        updateModelDropdown = function (provider) {
+            const customModels = getCustomModels();
+            let models = llmModels[provider] || [];
+
+            // For OpenRouter, add custom models
+            if (provider === 'openrouter') {
+                // Merge custom models (avoiding duplicates)
+                customModels.forEach(model => {
+                    if (!models.includes(model)) {
+                        models = [...models, model];
+                    }
+                });
+            }
+
+            modelSelect.innerHTML = '';
+
+            if (models.length === 0) {
+                modelSelect.innerHTML = '<option value="">Nessun modello disponibile</option>';
+                return;
+            }
+
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                // Format model name for display
+                let displayName = model;
+                if (model.includes('/')) {
+                    displayName = model.split('/').pop().replace(':free', ' (free)');
+                }
+                // Mark custom models
+                if (customModels.includes(model) && !llmModels.openrouter.includes(model)) {
+                    displayName += ' ⭐';
+                }
+                option.textContent = displayName;
+                modelSelect.appendChild(option);
+            });
+
+            // Select current model if it matches
+            if (currentSettings.provider === provider && currentSettings.model) {
+                modelSelect.value = currentSettings.model;
+            }
+        };
+
+        // Render custom models list on settings open
+        const originalLoadLLMSettings = loadLLMSettings;
+        loadLLMSettings = async function () {
+            await originalLoadLLMSettings();
+            renderCustomModelsList();
+        };
+
+        // ==================== PRE-RIDE VOICE INPUT ====================
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const preChatRecognition = new SpeechRecognition();
+            preChatRecognition.lang = 'it-IT';
+            preChatRecognition.continuous = false;
+            preChatRecognition.interimResults = true;
+
+            let preChatRecording = false;
+
+            preChatRecognition.onstart = () => {
+                preChatRecording = true;
+                preChatVoiceBtn.classList.add('recording');
+            };
+
+            preChatRecognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                preChatInput.value = transcript;
+            };
+
+            preChatRecognition.onerror = (event) => {
+                console.error('Pre-chat speech error:', event.error);
+                preChatRecording = false;
+                preChatVoiceBtn.classList.remove('recording');
+            };
+
+            preChatRecognition.onend = () => {
+                preChatRecording = false;
+                preChatVoiceBtn.classList.remove('recording');
+                // Auto-send if we have text
+                if (preChatInput.value.trim()) {
+                    sendPreChatMessage();
+                }
+            };
+
+            preChatVoiceBtn.addEventListener('click', () => {
+                if (preChatRecording) {
+                    preChatRecognition.stop();
+                } else {
+                    preChatInput.value = '';
+                    preChatRecognition.start();
+                }
+            });
+        } else {
+            // Voice not supported
+            preChatVoiceBtn.disabled = true;
+            preChatVoiceBtn.title = 'Riconoscimento vocale non supportato';
+        }
+
+    </script>
+</body>
+
+</html>
