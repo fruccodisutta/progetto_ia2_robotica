@@ -185,6 +185,7 @@ public class PedestrianAI : MonoBehaviour
                 if (!agent.pathPending && agent.remainingDistance <= 0.1f) 
                 {
                     // Il pedone ha raggiunto l'altra parte della strada - transizione a Wandering
+                    
                     agent.isStopped = true;
                     agent.ResetPath();
                     

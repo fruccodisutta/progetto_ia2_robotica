@@ -305,7 +305,7 @@ public class TaxiMissionController : MonoBehaviour
                 }
             }
 
-            // Attesa per simulare l'apertura della portiera e l'imbarco del passeggero
+            //Attesa per simulare l'apertura della portiera e l'imbarco del passeggero
             yield return new WaitForSeconds(0.5f);
 
             if (currentPassenger != null) currentPassenger.BoardTaxi();
@@ -885,8 +885,7 @@ public class TaxiMissionController : MonoBehaviour
         Debug.Log($"[TAXI MISSION CONTROLLER][BATTERY CHECK] Destinazione: {distanceKm:F2}km | Ritorno Charger: {returnToChargerKm:F2}km | Consumo Ritorno: {returnConsumption:F1}%");
 
         // Check Logic
-        float totalReq = carBattery.GetEstimatedConsumption(distanceKm) + returnConsumption + 5.0f; // Current Policy + Return + Buffer
-
+        float totalReq = carBattery.GetEstimatedConsumption(distanceKm) + returnConsumption + 10.0f; 
         if (carBattery.currentBattery < totalReq)
         {
             // Eco fallback check: calcola il percorso A* con i pesi ECO per avere la distanza corretta
@@ -927,7 +926,7 @@ public class TaxiMissionController : MonoBehaviour
             }
 
             float ecoReturnConsumption = carBattery.GetEstimatedConsumption(ecoReturnKm, ecoMultiplier);
-            float ecoReq = carBattery.GetEstimatedConsumption(ecoDistanceKm, ecoMultiplier) + ecoReturnConsumption + 5.0f;
+            float ecoReq = carBattery.GetEstimatedConsumption(ecoDistanceKm, ecoMultiplier) + ecoReturnConsumption + 10.0f;
 
             Debug.Log($"[TAXI MISSION CONTROLLER][BATTERY CHECK] Tentativo Fallback ECO: ReqStandard={totalReq:F1}% EcoReq={ecoReq:F1}% (Current={carBattery.currentBattery:F1}%)");
 

@@ -1393,6 +1393,7 @@ async def handle_unity_message(data: dict[str, Any]) -> dict[str, Any]:
     elif action == "explainability":
         message = payload.get("message", "").strip()
         eta_minutes = payload.get("eta_minutes")
+        payload_policy = payload.get("policy")
 
         # Rileva cambio policy forzato da Unity (es. batteria bassa -> ECO) - aggiorna solo la policy
         if "Passo a ECO" in message or "ECO per" in message:
@@ -1400,6 +1401,14 @@ async def handle_unity_message(data: dict[str, Any]) -> dict[str, Any]:
             if session.driving_policy != "Eco":
                 session.driving_policy = "Eco"
                 logger.info(f"[UNITY] Policy aggiornata a Eco nella sessione {session_id} (forzato da Unity)")
+
+        # Se Unity invia la policy esplicita nel payload, usala come source of truth.
+        if payload_policy:
+            new_policy = payload_policy.capitalize()
+            session = session_store.get_session(session_id)
+            if session.driving_policy != new_policy:
+                session.driving_policy = new_policy
+                logger.info(f"[UNITY] Policy aggiornata a {new_policy} nella sessione {session_id} (payload)")
 
         # Rileva cambio policy confermato da Unity
         policy_match = re.search(r"Policy cambiata in\s+([A-Za-z]+)", message, re.IGNORECASE)

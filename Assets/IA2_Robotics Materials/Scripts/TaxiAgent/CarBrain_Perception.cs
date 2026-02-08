@@ -105,7 +105,7 @@ public class CarBrain_Perception : MonoBehaviour
             }
 
             // FILTRO STERZATA (Curve Strette)
-            // Se stiamo curvando molto, ignoriamo i pedoni che si trovano all'esterno della curva
+            // Se stiamo curvando forte, ignoriamo i pedoni che si trovano all'esterno della curva
             if (isRelevant)
             {
                 float steer = motor.CurrentSteerAngle;

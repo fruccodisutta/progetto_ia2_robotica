@@ -295,6 +295,7 @@ public class KBService : MonoBehaviour
         System.Text.StringBuilder json = new System.Text.StringBuilder();
         json.Append("{\"mappings\":[");
 
+        int count = 0;
         int syncedCount = 0;
         
         // Itera sui POI - usa poiId invece dell'indice per robustezza
@@ -402,7 +403,7 @@ public class KBService : MonoBehaviour
                             if (oldestKey != null)
                             {
                                 multiplierCache.Remove(oldestKey);
-                                Debug.Log($"[KBService] Cache LRU: entry removed '{oldestKey}'");
+                                Debug.Log($"[KBService] Cache LRU: rimossa entry '{oldestKey}'");
                             }
                         }
                         

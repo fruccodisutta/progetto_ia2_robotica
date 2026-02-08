@@ -230,7 +230,7 @@ public class MissionCoordinator : MonoBehaviour
         
         if (!done)
         {
-            Debug.LogWarning($"[MISSION COORDINATOR] Timeout di risoluzione della policy '{policyName}'. Uso la policy di default 1.0x");
+            Debug.LogWarning($"[MISSION COORDINATOR] Timeout resolving policy '{policyName}'. Using default 1.0x");
             callback(1.0f);
         }
     }
@@ -607,7 +607,7 @@ public class MissionCoordinator : MonoBehaviour
         if (newPolicy.Equals(currentMission.drivingPolicy, System.StringComparison.OrdinalIgnoreCase))
         {
             Debug.Log($"[MISSION COORDINATOR] Policy già impostata a '{currentMission.drivingPolicy}', ignoro richiesta.");
-            SendExplainabilityMessage($"Modalità {currentMission.drivingPolicy} già attiva.");
+            SendExplainabilityMessage($"Modalità {currentMission.drivingPolicy} già attiva.", -1f, currentMission.drivingPolicy);
             yield break;
         }
 
@@ -702,7 +702,7 @@ public class MissionCoordinator : MonoBehaviour
             if (carBattery.currentBattery < requiredBattery)
             {
                 SendExplainabilityMessage($"Impossibile usare {newPolicy}: batteria insufficiente per completare la corsa e tornare alla colonnina.");
-                Debug.LogWarning($"[MISSION COORDINATOR] Cambio policy {newPolicy} rifiutato. Richiesta={requiredBattery:F1}% Corrente={carBattery.currentBattery:F1}% TripKm={tripDistanceKm:F2}km ReturnKm={returnToChargerKm:F2}km");
+                Debug.LogWarning($"[MISSION COORDINATOR] Policy change {newPolicy} rejected. Required={requiredBattery:F1}% Current={carBattery.currentBattery:F1}% TripKm={tripDistanceKm:F2}km ReturnKm={returnToChargerKm:F2}km");
                 yield break;
             }
         }
@@ -717,9 +717,9 @@ public class MissionCoordinator : MonoBehaviour
             missionController.ChangeDrivingPolicy(newPolicy);
             
             float newEta = carBattery.EstimateTimeMinutes(tripDistanceKm);
-            currentMission.estimatedEtaMin = newEta;
+            currentMission.estimatedEtaMin = newEta; // Update mission ETA estimate
             
-            SendExplainabilityMessage($"✅ Modalità {newPolicy} attivata con successo. Il percorso è stato ricalcolato sulla base della policy scelta e potrebbe aver subito variazioni.", newEta);
+            SendExplainabilityMessage($"✅ Modalità {newPolicy} attivata con successo. Il percorso è stato ricalcolato sulla base della policy scelta e potrebbe aver subito variazioni.", newEta, newPolicy);
             NotifyQueuePositions();
         }
     }
@@ -1004,7 +1004,7 @@ public class MissionCoordinator : MonoBehaviour
             {
                 selected = ped;
                 pickup = stop;
-                //Debug.Log($"[MISSION COORDINATOR] PEDESTRIAN READY! '{ped.name}' il pedone si trova già sul marciapiede vicino a '{stop.name}'");
+                Debug.Log($"[MISSION COORDINATOR] PEDESTRIAN READY! '{ped.name}' il pedone si trova già sul marciapiede vicino a '{stop.name}'");
                 return true;
             }
             
@@ -1246,7 +1246,7 @@ public class MissionCoordinator : MonoBehaviour
                     }
                      
                     // Invia il messaggio specifico immediatamente
-                    SendExplainabilityMessage("Batteria insufficiente per la policy attuale. Passo a ECO per completare la corsa.", eta);
+                    SendExplainabilityMessage("Batteria insufficiente per la policy attuale. Passo a ECO per completare la corsa.", eta, "Eco");
                     NotifyQueuePositions();
                     return; 
                 }
@@ -1281,7 +1281,7 @@ public class MissionCoordinator : MonoBehaviour
                         // Opzione 2: Fine corsa
                         string destChangeMsg = "⛔ Mi dispiace, la batteria non è sufficiente per raggiungere la nuova destinazione. " +
                                                 "Posso riportarti alla destinazione precedente oppure puoi terminare la corsa qui.";
-                        SendExplainabilityMessage(destChangeMsg, -1f);
+                        SendExplainabilityMessage(destChangeMsg, -1f, "Eco");
                     }
                     else
                     {
@@ -1289,7 +1289,7 @@ public class MissionCoordinator : MonoBehaviour
                         // Ferma al punto sicuro più vicino, scusati, vai a ricaricare
                         string emergencyMsg = "⛔ Mi scuso per il disagio! A causa del nuovo percorso, la batteria non è sufficiente per completare la corsa. " +
                                                 "Ti lascerò al punto sicuro più vicino.";
-                        SendExplainabilityMessage(emergencyMsg, -1f);
+                        SendExplainabilityMessage(emergencyMsg, -1f, "Eco");
                          
                         // Avvia Fine Corsa Emergenza
                         if (missionController != null)
@@ -1307,13 +1307,20 @@ public class MissionCoordinator : MonoBehaviour
             }
         }
 
-        SendExplainabilityMessage(message, eta);
+        if (reason == "policy_forced_eco")
+        {
+            SendExplainabilityMessage(message, eta, "Eco");
+        }
+        else
+        {
+            SendExplainabilityMessage(message, eta);
+        }
         
         // AGGIORNAMENTO CODA: Eventi come pioggia, policy o blocchi cambiano il tempo residuo. Avvisiamo la coda
         NotifyQueuePositions();
     }
 
-    private void SendExplainabilityMessage(string message, float etaMinutes = -1f)
+    private void SendExplainabilityMessage(string message, float etaMinutes = -1f, string policy = null)
     {
         if (connector == null || currentMission == null || string.IsNullOrEmpty(message)) return;
 
@@ -1321,6 +1328,11 @@ public class MissionCoordinator : MonoBehaviour
         if (etaMinutes > 0)
         {
              etaPayload = $", \"eta_minutes\": {etaMinutes.ToString("F1").Replace(",", ".")}";
+        }
+        string policyPayload = "";
+        if (!string.IsNullOrEmpty(policy))
+        {
+            policyPayload = $", \"policy\": \"{policy}\"";
         }
 
         // Escape caratteri speciali JSON
@@ -1335,8 +1347,9 @@ public class MissionCoordinator : MonoBehaviour
             "\"session_id\": \"" + currentMission.sessionId + "\"," +
             "\"action\": \"explainability\"," +
             "\"payload\": {" +
-                "\"message\": \"" + escapedMessage + "\"" + 
+                "\"message\": \"" + escapedMessage + "\"" +
                  etaPayload +
+                 policyPayload +
             "}" +
         "}";
         connector.SendToBackend(json);
